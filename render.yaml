@@ -1,0 +1,50 @@
+services:
+  # Combined Backend + Frontend Service (Recommended)
+  - type: web
+    name: dor-app
+    env: node
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build && cd ../backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false  # Set this in Render dashboard - your MongoDB Atlas connection string
+      - key: JWT_SECRET
+        sync: false  # Set this in Render dashboard - generate a strong random string
+      - key: JWT_EXPIRE
+        value: 30d
+
+  # Alternative: Separate Services (Uncomment if you prefer separate deployments)
+  # Backend Service
+  # - type: web
+  #   name: dor-backend
+  #   env: node
+  #   plan: free
+  #   buildCommand: cd backend && npm install
+  #   startCommand: cd backend && npm start
+  #   envVars:
+  #     - key: NODE_ENV
+  #       value: production
+  #     - key: PORT
+  #       value: 10000
+  #     - key: MONGODB_URI
+  #       sync: false
+  #     - key: JWT_SECRET
+  #       sync: false
+  #     - key: JWT_EXPIRE
+  #       value: 30d
+
+  # Frontend Service (Static Site)
+  # - type: web
+  #   name: dor-frontend
+  #   env: static
+  #   buildCommand: cd frontend && npm install && npm run build
+  #   staticPublishPath: frontend/dist
+  #   envVars:
+  #     - key: VITE_API_BASE_URL
+  #       value: https://dor-backend.onrender.com/api
+

@@ -46,8 +46,9 @@ const AddProduct = () => {
       const uploadResults = await Promise.all(uploadPromises);
 
       // Get the uploaded URLs (backend returns /api/uploads/filename)
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-      const serverBaseUrl = baseUrl.replace('/api', '') || 'http://localhost:5000';
+      const serverBaseUrl = import.meta.env.VITE_API_BASE_URL 
+        ? import.meta.env.VITE_API_BASE_URL.replace('/api', '') || ''
+        : (import.meta.env.PROD ? '' : 'http://localhost:5000');
       const uploadedImages = uploadResults.map((result, index) => ({
         url: `${serverBaseUrl}${result.data.url}`,
         alt: files[index].name.split('.')[0] || `Image ${index + 1}`,

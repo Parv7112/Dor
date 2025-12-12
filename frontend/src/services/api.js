@@ -1,4 +1,24 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+// Use environment variable if set, otherwise use relative URL in production or localhost in development
+const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  // In production (when served from same origin), use relative URL
+  // In development, use localhost
+  return import.meta.env.PROD ? '/api' : 'http://localhost:5000/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+// Get server base URL (without /api) for constructing full URLs (e.g., for images)
+export const getServerBaseUrl = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL.replace('/api', '') || '';
+  }
+  // In production, use empty string for relative URLs
+  // In development, use localhost
+  return import.meta.env.PROD ? '' : 'http://localhost:5000';
+};
 
 // Get token from localStorage
 const getToken = () => {
@@ -94,8 +114,7 @@ export const apiService = {
       formData.append('image', file);
       
       const token = getToken();
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-      const url = `${baseUrl}/upload/image`;
+      const url = `${API_BASE_URL}/upload/image`;
       
       const headers = {};
       // Only add auth header if authentication is required and token exists
@@ -124,8 +143,7 @@ export const apiService = {
       });
       
       const token = getToken();
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-      const url = `${baseUrl}/upload/images`;
+      const url = `${API_BASE_URL}/upload/images`;
       
       const response = await fetch(url, {
         method: 'POST',

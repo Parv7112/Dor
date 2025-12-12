@@ -80,8 +80,10 @@ const Register = () => {
       let imageUrl = null;
       if (image) {
         const uploadResult = await apiService.upload.image(image, false);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-        const serverBaseUrl = baseUrl.replace('/api', '') || 'http://localhost:5000';
+        // Import the helper function (we'll add it to api.js exports)
+        const serverBaseUrl = import.meta.env.VITE_API_BASE_URL 
+          ? import.meta.env.VITE_API_BASE_URL.replace('/api', '') || ''
+          : (import.meta.env.PROD ? '' : 'http://localhost:5000');
         imageUrl = `${serverBaseUrl}${uploadResult.data.url}`;
       }
 

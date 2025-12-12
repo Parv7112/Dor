@@ -45,7 +45,9 @@ const Artisans = () => {
                   <img 
                     src={artisan.image.startsWith('http') 
                       ? artisan.image 
-                      : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${artisan.image}`}
+                      : `${import.meta.env.VITE_API_BASE_URL 
+                          ? import.meta.env.VITE_API_BASE_URL.replace('/api', '') || ''
+                          : (import.meta.env.PROD ? '' : 'http://localhost:5000')}${artisan.image}`}
                     alt={artisan.name}
                     className="avatar-image"
                   />
