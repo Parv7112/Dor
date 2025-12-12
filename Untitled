@@ -1,0 +1,2 @@
+PS C:\Users\Admin\Desktop\dor> git remote add origin git@github.com:Parv7112/Dor.git
+fatal: not a git repository (or any of the parent directories): .git

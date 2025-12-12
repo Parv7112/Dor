@@ -1,0 +1,37 @@
+/* CSS Variables for Rajasthani Theming */
+:root {
+  /* Rajasthani Traditional Colors */
+  --primary-color: #ff6b35; /* Vibrant Orange */
+  --primary-dark: #e85a2b;
+  --secondary-color: #c44569; /* Deep Pink/Maroon */
+  --accent-color: #f7931e; /* Golden Orange */
+  --royal-blue: #4a90e2;
+  --turquoise: #50c878;
+  --saffron: #ff9933;
+  --deep-red: #c41e3a;
+  --gold: #ffd700;
+  
+  --text-primary: #2c1810; /* Deep Brown */
+  --text-secondary: #5a4038;
+  --bg-primary: #fef9f3; /* Warm Cream */
+  --bg-secondary: #fff8f0;
+  --bg-pattern: #faf5eb;
+  
+  /* Rajasthani Patterns */
+  --border-radius: 8px;
+  --border-radius-lg: 12px;
+  --box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+  --box-shadow-hover: 0 8px 24px rgba(255, 107, 53, 0.25);
+  
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  
+  /* Pattern gradients */
+  --gradient-primary: linear-gradient(135deg, #ff6b35 0%, #ff9933 100%);
+  --gradient-secondary: linear-gradient(135deg, #c44569 0%, #ff6b35 100%);
+  --gradient-gold: linear-gradient(135deg, #ffd700 0%, #ff9933 100%);
+}
+
