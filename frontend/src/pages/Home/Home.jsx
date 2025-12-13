@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../../constants/routes';
 import { Button } from '../../components';
-import apiService, { getServerBaseUrl } from '../../services/api';
+import apiService, { getImageUrl } from '../../services/api';
 import './Home.css';
 
 const Home = () => {
@@ -42,12 +42,6 @@ const Home = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const getProductImageUrl = (image) => {
-    if (!image || !image.url) return null;
-    if (image.url.startsWith('http')) return image.url;
-    return `${getServerBaseUrl()}${image.url}`;
   };
 
   return (
@@ -153,7 +147,7 @@ const Home = () => {
             </Link>
           </div>
           <div className="featured-products-grid">
-            {featuredProducts.map((product) => (
+                {featuredProducts.map((product) => (
               <Link
                 key={product._id}
                 to={`/products/${product._id}`}
@@ -161,7 +155,7 @@ const Home = () => {
               >
                 {product.images && product.images.length > 0 && product.images[0].url ? (
                   <img
-                    src={getProductImageUrl(product.images[0])}
+                    src={getImageUrl(product.images[0].url)}
                     alt={product.images[0].alt || product.name}
                     className="featured-product-image"
                   />

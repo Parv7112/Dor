@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import apiService, { getServerBaseUrl } from '../../services/api';
+import apiService, { getImageUrl } from '../../services/api';
 import './Products.css';
 
 const Products = () => {
@@ -46,12 +46,6 @@ const Products = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     loadProducts();
-  };
-
-  const getProductImageUrl = (image) => {
-    if (!image || !image.url) return null;
-    if (image.url.startsWith('http')) return image.url;
-    return `${getServerBaseUrl()}${image.url}`;
   };
 
   return (
@@ -103,7 +97,7 @@ const Products = () => {
             >
               {product.images && product.images.length > 0 && product.images[0].url ? (
                 <img
-                  src={getProductImageUrl(product.images[0])}
+                  src={getImageUrl(product.images[0].url)}
                   alt={product.images[0].alt || product.name}
                   className="product-image"
                 />

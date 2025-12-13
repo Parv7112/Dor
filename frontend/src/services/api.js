@@ -20,6 +20,28 @@ export const getServerBaseUrl = () => {
   return import.meta.env.PROD ? '' : 'http://localhost:5000';
 };
 
+// Normalize image URL - extract relative path if it's a full URL
+export const normalizeImageUrl = (url) => {
+  if (!url) return null;
+  // If it's already a relative path, return as is
+  if (url.startsWith('/api/uploads/')) return url;
+  // If it's a full URL, extract the relative path
+  if (url.startsWith('http')) {
+    const match = url.match(/\/api\/uploads\/[^/]+$/);
+    return match ? match[0] : url;
+  }
+  return url;
+};
+
+// Get full image URL for display (handles both relative and absolute URLs)
+export const getImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  // If already a full URL, return as is
+  if (imagePath.startsWith('http')) return imagePath;
+  // Construct full URL from relative path
+  return `${getServerBaseUrl()}${imagePath}`;
+};
+
 // Get token from localStorage
 const getToken = () => {
   return localStorage.getItem('token');

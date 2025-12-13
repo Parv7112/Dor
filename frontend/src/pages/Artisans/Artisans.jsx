@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import apiService from '../../services/api';
+import apiService, { getImageUrl } from '../../services/api';
 import './Artisans.css';
 
 const Artisans = () => {
@@ -49,11 +49,7 @@ const Artisans = () => {
               <div className="artisan-avatar">
                 {artisan.image ? (
                   <img 
-                    src={artisan.image.startsWith('http') 
-                      ? artisan.image 
-                      : `${import.meta.env.VITE_API_BASE_URL 
-                          ? import.meta.env.VITE_API_BASE_URL.replace('/api', '') || ''
-                          : (import.meta.env.PROD ? '' : 'http://localhost:5000')}${artisan.image}`}
+                    src={getImageUrl(artisan.image)}
                     alt={artisan.name}
                     className="avatar-image"
                   />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import apiService, { getServerBaseUrl } from '../../services/api';
+import apiService, { getImageUrl } from '../../services/api';
 import './ProductDetail.css';
 
 const ProductDetail = () => {
@@ -33,12 +33,6 @@ const ProductDetail = () => {
     return <div className="error-message">{error || 'Product not found'}</div>;
   }
 
-  const getProductImageUrl = (image) => {
-    if (!image || !image.url) return null;
-    if (image.url.startsWith('http')) return image.url;
-    return `${getServerBaseUrl()}${image.url}`;
-  };
-
   return (
     <div className="product-detail-container">
       <Link to="/products" className="back-link">← Back to Products</Link>
@@ -47,7 +41,7 @@ const ProductDetail = () => {
         <div className="product-images">
           {product.images && product.images.length > 0 && product.images[0].url ? (
             <img
-              src={getProductImageUrl(product.images[0])}
+              src={getImageUrl(product.images[0].url)}
               alt={product.images[0].alt || product.name}
               className="main-image"
             />

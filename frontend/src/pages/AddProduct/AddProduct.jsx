@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import apiService from '../../services/api';
+import apiService, { normalizeImageUrl } from '../../services/api';
 import { ROUTES } from '../../constants/routes';
 import './AddProduct.css';
 
@@ -45,12 +45,10 @@ const AddProduct = () => {
       const uploadPromises = files.map((file) => apiService.upload.image(file, true));
       const uploadResults = await Promise.all(uploadPromises);
 
-      // Get the uploaded URLs (backend returns /api/uploads/filename)
-      const serverBaseUrl = import.meta.env.VITE_API_BASE_URL 
-        ? import.meta.env.VITE_API_BASE_URL.replace('/api', '') || ''
-        : (import.meta.env.PROD ? '' : 'http://localhost:5000');
+      // Store only relative paths in database (backend returns /api/uploads/filename)
+      // Full URLs will be constructed when displaying images
       const uploadedImages = uploadResults.map((result, index) => ({
-        url: `${serverBaseUrl}${result.data.url}`,
+        url: normalizeImageUrl(result.data.url), // Normalize to relative path: /api/uploads/filename
         alt: files[index].name.split('.')[0] || `Image ${index + 1}`,
       }));
 

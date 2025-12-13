@@ -6,9 +6,11 @@ const User = require('../models/User');
 
 const userId = '693c4715ad4f3e3a24605fd8';
 
-// Helper function to get image URL - uses existing uploads or placeholder
+// Helper function to get image URL - always returns relative path
+// Frontend will construct full URLs based on environment
 const getImageUrl = (filename) => {
-  // Use existing uploaded images if available, otherwise use placeholder
+  // Always return relative path: /api/uploads/filename
+  // This ensures images work in both local and deployed environments
   return `/api/uploads/${filename}`;
 };
 

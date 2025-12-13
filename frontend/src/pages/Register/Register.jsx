@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { ROUTES } from '../../constants/routes';
-import apiService from '../../services/api';
+import apiService, { normalizeImageUrl } from '../../services/api';
 import './Register.css';
 
 const Register = () => {
@@ -77,14 +77,12 @@ const Register = () => {
 
     try {
       // Upload image first if selected (no auth required for registration)
+      // Store only relative path in database (backend returns /api/uploads/filename)
+      // Full URLs will be constructed when displaying images
       let imageUrl = null;
       if (image) {
         const uploadResult = await apiService.upload.image(image, false);
-        // Import the helper function (we'll add it to api.js exports)
-        const serverBaseUrl = import.meta.env.VITE_API_BASE_URL 
-          ? import.meta.env.VITE_API_BASE_URL.replace('/api', '') || ''
-          : (import.meta.env.PROD ? '' : 'http://localhost:5000');
-        imageUrl = `${serverBaseUrl}${uploadResult.data.url}`;
+        imageUrl = normalizeImageUrl(uploadResult.data.url); // Normalize to relative path
       }
 
       const { confirmPassword, ...registerData } = formData;

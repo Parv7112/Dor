@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import apiService from '../../services/api';
+import apiService, { getImageUrl, getServerBaseUrl } from '../../services/api';
 import { ROUTES } from '../../constants/routes';
-import { getServerBaseUrl } from '../../services/api';
 import './CategoryDetail.css';
 
 const CategoryDetail = () => {
@@ -135,17 +134,6 @@ const CategoryDetail = () => {
     }
   };
 
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return null;
-    if (imagePath.startsWith('http')) return imagePath;
-    return `${getServerBaseUrl()}${imagePath}`;
-  };
-
-  const getProductImageUrl = (image) => {
-    if (!image || !image.url) return null;
-    if (image.url.startsWith('http')) return image.url;
-    return `${getServerBaseUrl()}${image.url}`;
-  };
 
   if (loading) {
     return <div className="loading">Loading category details...</div>;
@@ -226,7 +214,7 @@ const CategoryDetail = () => {
                 >
                   {product.images && product.images.length > 0 && product.images[0].url ? (
                     <img
-                      src={getProductImageUrl(product.images[0])}
+                      src={getImageUrl(product.images[0].url)}
                       alt={product.images[0].alt || product.name}
                       className="product-image"
                     />

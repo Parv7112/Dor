@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import apiService, { getServerBaseUrl } from '../../services/api';
+import apiService, { getServerBaseUrl, normalizeImageUrl, getImageUrl } from '../../services/api';
 import { ROUTES } from '../../constants/routes';
 import './AddProduct.css';
 
@@ -32,18 +32,16 @@ const EditProduct = () => {
       const response = await apiService.products.getById(id);
       const product = response.data;
       
-      const existingImages = product.images && product.images.length > 0 
+      // Normalize existing images to relative paths and set previews
+      const normalizedImages = (product.images && product.images.length > 0 
         ? product.images 
-        : [];
+        : []).map(img => ({
+        ...img,
+        url: normalizeImageUrl(img.url), // Normalize to relative path
+      }));
       
-      // Set previews for existing images - construct full URLs
-      const getImageUrl = (img) => {
-        if (!img || !img.url) return null;
-        if (img.url.startsWith('http')) return img.url;
-        return `${getServerBaseUrl()}${img.url}`;
-      };
-      
-      setImagePreviews(existingImages.map(img => getImageUrl(img)));
+      // Set previews for existing images - construct full URLs for display
+      setImagePreviews(normalizedImages.map(img => getImageUrl(img.url)));
       
       setFormData({
         name: product.name || '',
@@ -51,7 +49,7 @@ const EditProduct = () => {
         price: product.price || '',
         category: product.category || '',
         stock: product.stock || '',
-        images: existingImages,
+        images: normalizedImages, // Store normalized relative paths
         tags: product.tags ? product.tags.join(', ') : '',
       });
     } catch (err) {
@@ -86,12 +84,10 @@ const EditProduct = () => {
       const uploadPromises = files.map((file) => apiService.upload.image(file, true));
       const uploadResults = await Promise.all(uploadPromises);
 
-      // Get the uploaded URLs (backend returns /api/uploads/filename)
-      const serverBaseUrl = import.meta.env.VITE_API_BASE_URL 
-        ? import.meta.env.VITE_API_BASE_URL.replace('/api', '') || ''
-        : (import.meta.env.PROD ? '' : 'http://localhost:5000');
+      // Store only relative paths in database (backend returns /api/uploads/filename)
+      // Full URLs will be constructed when displaying images
       const uploadedImages = uploadResults.map((result, index) => ({
-        url: `${serverBaseUrl}${result.data.url}`,
+        url: normalizeImageUrl(result.data.url), // Normalize to relative path: /api/uploads/filename
         alt: files[index].name.split('.')[0] || `Image ${index + 1}`,
       }));
 
