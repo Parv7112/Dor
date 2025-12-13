@@ -6,6 +6,15 @@ const seedData = require('../scripts/seedTestData');
 // WARNING: This will delete all existing products and create new ones
 // Use with caution! Consider adding authentication in production
 router.post('/seed', async (req, res) => {
+  await handleSeed(req, res);
+});
+
+// Also allow GET for easier browser access
+router.get('/seed', async (req, res) => {
+  await handleSeed(req, res);
+});
+
+async function handleSeed(req, res) {
   try {
     // Optional: Add a simple secret check (set SEED_SECRET in environment)
     const secret = req.query.secret || req.body.secret;
