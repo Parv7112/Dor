@@ -38,54 +38,57 @@ app.get('/health', (req, res) => {
 });
 
 // Serve frontend in production
-if (process.env.NODE_ENV === 'production') {
-  const fs = require('fs');
-  // When running from backend directory, go up one level to root, then into frontend/dist
-  const frontendPath = path.resolve(__dirname, '../frontend/dist');
-  
-  console.log(`Looking for frontend build at: ${frontendPath}`);
-  console.log(`Current __dirname: ${__dirname}`);
-  
-  // Check if frontend build exists
-  if (fs.existsSync(frontendPath)) {
-    console.log(`✓ Serving frontend from: ${frontendPath}`);
-    
-    // Verify index.html exists
-    const indexPath = path.join(frontendPath, 'index.html');
-    if (fs.existsSync(indexPath)) {
-      console.log(`✓ Found index.html at: ${indexPath}`);
-    } else {
-      console.warn(`⚠ index.html not found at: ${indexPath}`);
-    }
-    
-    // Serve static files from frontend build
-    app.use(express.static(frontendPath));
-    
-    // Serve index.html for all non-API routes (SPA routing)
-    // This must be after API routes but before error handlers
-    app.get('*', (req, res) => {
-      // Don't serve frontend for API routes (shouldn't reach here due to route order, but safety check)
-      if (req.path.startsWith('/api')) {
-        return res.status(404).json({ message: 'API route not found' });
-      }
-      res.sendFile(path.join(frontendPath, 'index.html'));
-    });
+// Check NODE_ENV explicitly and log it
+console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`PORT: ${process.env.PORT}`);
+
+const fs = require('fs');
+// Try multiple possible paths for frontend build
+const possiblePaths = [
+  path.resolve(__dirname, '../frontend/dist'),  // From backend/ to root/frontend/dist
+  path.resolve(process.cwd(), 'frontend/dist'), // From current working directory
+  path.resolve(__dirname, '../../frontend/dist'), // Alternative path
+];
+
+let frontendPath = null;
+for (const testPath of possiblePaths) {
+  if (fs.existsSync(testPath) && fs.existsSync(path.join(testPath, 'index.html'))) {
+    frontendPath = testPath;
+    console.log(`✓ Found frontend build at: ${frontendPath}`);
+    break;
   } else {
-    console.error(`✗ Frontend build not found at: ${frontendPath}`);
-    console.error('✗ Make sure frontend is built before starting the server');
-    console.error('✗ Expected structure: root/frontend/dist/');
-    app.get('/', (req, res) => {
-      res.json({ 
-        message: 'DOR API is running, but frontend build is missing',
-        error: 'Frontend not built. Check build process.',
-        expectedPath: frontendPath
-      });
-    });
+    console.log(`✗ Checked path (not found): ${testPath}`);
   }
+}
+
+if (frontendPath) {
+  // Serve static files from frontend build
+  app.use(express.static(frontendPath));
+  
+  // Serve index.html for all non-API routes (SPA routing)
+  // This must be after API routes but before error handlers
+  app.get('*', (req, res) => {
+    // Don't serve frontend for API routes (shouldn't reach here due to route order, but safety check)
+    if (req.path.startsWith('/api')) {
+      return res.status(404).json({ message: 'API route not found' });
+    }
+    res.sendFile(path.join(frontendPath, 'index.html'));
+  });
+  console.log(`✓ Frontend will be served for all non-API routes`);
 } else {
-  // Development: return API message for root
+  console.error('✗ Frontend build not found in any of the expected locations');
+  console.error('✗ Checked paths:', possiblePaths);
+  console.error('✗ Current working directory:', process.cwd());
+  console.error('✗ __dirname:', __dirname);
+  
+  // Still serve API, but show error message for root
   app.get('/', (req, res) => {
-    res.json({ message: 'Welcome to DOR API - Development Mode' });
+    res.json({ 
+      message: 'DOR API is running, but frontend build is missing',
+      error: 'Frontend not built. Check build process.',
+      checkedPaths: possiblePaths,
+      nodeEnv: process.env.NODE_ENV
+    });
   });
 }
 
