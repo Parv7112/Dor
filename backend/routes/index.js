@@ -11,6 +11,7 @@ router.use('/auth', require('./authRoutes'));
 router.use('/products', require('./productRoutes'));
 router.use('/artisans', require('./artisanRoutes'));
 router.use('/upload', require('./uploadRoutes'));
+router.use('/admin', require('./adminRoutes'));
 
 module.exports = router;
 

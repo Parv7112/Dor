@@ -15,9 +15,14 @@ export const getServerBaseUrl = () => {
   if (import.meta.env.VITE_API_BASE_URL) {
     return import.meta.env.VITE_API_BASE_URL.replace('/api', '') || '';
   }
-  // In production, use empty string for relative URLs
+  // In production (when served from same origin), use empty string for relative URLs
+  // This allows relative URLs to work correctly when frontend and backend are on same domain
   // In development, use localhost
-  return import.meta.env.PROD ? '' : 'http://localhost:5000';
+  if (import.meta.env.PROD) {
+    // In production, use relative URLs (empty string) so they work with same-origin serving
+    return '';
+  }
+  return 'http://localhost:5000';
 };
 
 // Normalize image URL - extract relative path if it's a full URL
@@ -34,12 +39,29 @@ export const normalizeImageUrl = (url) => {
 };
 
 // Get full image URL for display (handles both relative and absolute URLs)
+// This ensures images work in both local and deployed environments
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
-  // If already a full URL, return as is
-  if (imagePath.startsWith('http')) return imagePath;
-  // Construct full URL from relative path
-  return `${getServerBaseUrl()}${imagePath}`;
+  
+  // If already a full URL (http/https), return as is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  
+  // For relative paths, construct URL based on environment
+  const serverBaseUrl = getServerBaseUrl();
+  
+  // Ensure path starts with /
+  const normalizedPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  
+  // In production, serverBaseUrl is empty string, so return relative path
+  // In development, prepend localhost
+  if (serverBaseUrl) {
+    return `${serverBaseUrl}${normalizedPath}`;
+  }
+  
+  // In production, return relative path (works when frontend and backend are same origin)
+  return normalizedPath;
 };
 
 // Get token from localStorage

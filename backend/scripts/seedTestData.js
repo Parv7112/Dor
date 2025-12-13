@@ -6,12 +6,21 @@ const User = require('../models/User');
 
 const userId = '693c4715ad4f3e3a24605fd8';
 
-// Helper function to get image URL - always returns relative path
-// Frontend will construct full URLs based on environment
-const getImageUrl = (filename) => {
-  // Always return relative path: /api/uploads/filename
-  // This ensures images work in both local and deployed environments
-  return `/api/uploads/${filename}`;
+// Helper function to get placeholder image URL from CDN
+// Using placeholder.com for reliable CDN images that work everywhere
+const getPlaceholderImage = (category, index = 1) => {
+  // Use placeholder.com with different sizes and text based on category
+  const categoryMap = {
+    crafts: { text: 'Traditional+Puppets', color: 'FF6B35' },
+    clothing: { text: 'Handcrafted+Textiles', color: 'FF9933' },
+    jewelry: { text: 'Artisan+Jewelry', color: 'C44569' },
+    home: { text: 'Pottery+Crafts', color: '4ECDC4' },
+    art: { text: 'Miniature+Art', color: '95A5A6' },
+  };
+  
+  const cat = categoryMap[category] || { text: 'Product', color: 'FF6B35' };
+  // Return placeholder.com URL with category-specific styling
+  return `https://via.placeholder.com/600x600/${cat.color}/FFFFFF?text=${cat.text}+${index}`;
 };
 
 const testProducts = [
@@ -26,7 +35,7 @@ const testProducts = [
     artisanShopName: 'DOR',
     images: [
       {
-        url: getImageUrl('image-1765558314800-825613998.png'),
+        url: getPlaceholderImage('crafts', 1),
         alt: 'Traditional Kathputli Puppet Set'
       }
     ],
@@ -44,7 +53,7 @@ const testProducts = [
     artisanShopName: 'DOR',
     images: [
       {
-        url: getImageUrl('image-1765635970800-360345278.png'),
+        url: getPlaceholderImage('clothing', 1),
         alt: 'Bandhani Silk Saree'
       }
     ],
@@ -62,7 +71,7 @@ const testProducts = [
     artisanShopName: 'DOR',
     images: [
       {
-        url: getImageUrl('image-1765636025710-312663870.jfif'),
+        url: getPlaceholderImage('jewelry', 1),
         alt: 'Silver Kundan Necklace'
       }
     ],
@@ -80,7 +89,7 @@ const testProducts = [
     artisanShopName: 'DOR',
     images: [
       {
-        url: getImageUrl('image-1765636606473-348134202.jfif'),
+        url: getPlaceholderImage('home', 1),
         alt: 'Blue Pottery Vase'
       }
     ],
@@ -98,7 +107,7 @@ const testProducts = [
     artisanShopName: 'DOR',
     images: [
       {
-        url: getImageUrl('image-1765635970800-360345278.png'),
+        url: getPlaceholderImage('clothing', 2),
         alt: 'Block Print Cotton Kurta'
       }
     ],
@@ -116,7 +125,7 @@ const testProducts = [
     artisanShopName: 'DOR',
     images: [
       {
-        url: getImageUrl('image-1765636025710-312663870.jfif'),
+        url: getPlaceholderImage('jewelry', 2),
         alt: 'Meenakari Silver Earrings'
       }
     ],
@@ -134,7 +143,7 @@ const testProducts = [
     artisanShopName: 'DOR',
     images: [
       {
-        url: getImageUrl('image-1765558314800-825613998.png'),
+        url: getPlaceholderImage('art', 1),
         alt: 'Miniature Painting - Royal Court Scene'
       }
     ],
@@ -152,7 +161,7 @@ const testProducts = [
     artisanShopName: 'DOR',
     images: [
       {
-        url: getImageUrl('image-1765636606473-348134202.jfif'),
+        url: getPlaceholderImage('home', 2),
         alt: 'Terracotta Decorative Plates'
       }
     ],
@@ -170,7 +179,7 @@ const testProducts = [
     artisanShopName: 'DOR',
     images: [
       {
-        url: getImageUrl('image-1765558314800-825613998.png'),
+        url: getPlaceholderImage('crafts', 2),
         alt: 'Traditional Puppet Show Set'
       }
     ],
@@ -188,7 +197,7 @@ const testProducts = [
     artisanShopName: 'DOR',
     images: [
       {
-        url: getImageUrl('image-1765635970800-360345278.png'),
+        url: getPlaceholderImage('clothing', 3),
         alt: 'Handwoven Rajasthani Shawl'
       }
     ],
@@ -254,13 +263,32 @@ async function seedData() {
     });
 
     console.log('\n✅ Test data seeded successfully!');
-    process.exit(0);
+    
+    // Return summary for API usage
+    return {
+      success: true,
+      userId,
+      productsCreated: products.length,
+      categoryCounts,
+    };
   } catch (error) {
     console.error('❌ Error seeding test data:', error);
-    process.exit(1);
+    throw error; // Re-throw for API route to handle
   }
 }
 
-// Run the seed function
-seedData();
+// Only run directly if called from command line
+if (require.main === module) {
+  seedData()
+    .then(() => {
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('Seed failed:', error);
+      process.exit(1);
+    });
+}
+
+// Export for use in API routes
+module.exports = seedData;
 
