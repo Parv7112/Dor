@@ -4,12 +4,16 @@
   "description": "Backend server for DOR",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node api.js && node server.js",
+    "dev": "node api.js && nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed": "node scripts/seedTestData.js"
   },
-  "keywords": ["dor", "application", "backend"],
+  "keywords": [
+    "dor",
+    "application",
+    "backend"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",

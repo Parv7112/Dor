@@ -2,6 +2,18 @@ const express = require('express');
 const router = express.Router();
 const seedData = require('../scripts/seedTestData');
 
+// Status endpoint to check if admin routes are accessible
+router.get('/status', (req, res) => {
+  res.json({
+    status: 'OK',
+    message: 'Admin routes are accessible',
+    endpoints: {
+      seed: '/api/admin/seed?secret=CHANGE_THIS_SECRET',
+      note: 'The seed endpoint will delete all products and create new ones with CDN images'
+    }
+  });
+});
+
 // Admin route to seed database
 // WARNING: This will delete all existing products and create new ones
 // Use with caution! Consider adding authentication in production
@@ -44,7 +56,7 @@ async function handleSeed(req, res) {
       message: error.message 
     });
   }
-});
+}
 
 module.exports = router;
 
