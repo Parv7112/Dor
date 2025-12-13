@@ -16,14 +16,22 @@ const productService = {
     }
     
     if (search) {
-      query.$text = { $search: search };
+      // Use regex for partial matching in name, description, and tags
+      const searchRegex = new RegExp(search, 'i');
+      query.$or = [
+        { name: searchRegex },
+        { description: searchRegex },
+        { category: searchRegex },
+        { tags: { $in: [searchRegex] } },
+        { artisanName: searchRegex },
+      ];
     }
 
     const skip = (page - 1) * limit;
 
     const products = await Product.find(query)
       .populate('artisan', 'name shopName')
-      .sort(search ? { score: { $meta: 'textScore' } } : { createdAt: -1 })
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
 

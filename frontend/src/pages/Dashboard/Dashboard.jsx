@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
-import apiService from '../../services/api';
+import apiService, { getServerBaseUrl } from '../../services/api';
 import { ROUTES } from '../../constants/routes';
 import './Dashboard.css';
 
@@ -38,6 +38,12 @@ const Dashboard = () => {
     } catch (err) {
       alert(err.message || 'Failed to delete product');
     }
+  };
+
+  const getProductImageUrl = (image) => {
+    if (!image || !image.url) return null;
+    if (image.url.startsWith('http')) return image.url;
+    return `${getServerBaseUrl()}${image.url}`;
   };
 
   return (
@@ -79,10 +85,10 @@ const Dashboard = () => {
               {products.map((product) => (
                 <tr key={product._id}>
                   <td>
-                    {product.images && product.images.length > 0 ? (
+                    {product.images && product.images.length > 0 && product.images[0].url ? (
                       <img
-                        src={product.images[0].url}
-                        alt={product.name}
+                        src={getProductImageUrl(product.images[0])}
+                        alt={product.images[0].alt || product.name}
                         className="table-image"
                       />
                     ) : (

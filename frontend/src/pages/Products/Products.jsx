@@ -1,17 +1,31 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import apiService from '../../services/api';
+import { Link, useSearchParams } from 'react-router-dom';
+import apiService, { getServerBaseUrl } from '../../services/api';
 import './Products.css';
 
 const Products = () => {
+  const [searchParams] = useSearchParams();
+  const categoryFromUrl = searchParams.get('category') || '';
+  
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({
-    category: '',
+    category: categoryFromUrl,
     search: '',
     page: 1,
   });
+
+  useEffect(() => {
+    // Update filters when URL category changes
+    const urlCategory = searchParams.get('category') || '';
+    setFilters(prev => {
+      if (prev.category !== urlCategory) {
+        return { ...prev, category: urlCategory, page: 1 };
+      }
+      return prev;
+    });
+  }, [searchParams]);
 
   useEffect(() => {
     loadProducts();
@@ -32,6 +46,12 @@ const Products = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     loadProducts();
+  };
+
+  const getProductImageUrl = (image) => {
+    if (!image || !image.url) return null;
+    if (image.url.startsWith('http')) return image.url;
+    return `${getServerBaseUrl()}${image.url}`;
   };
 
   return (
@@ -81,9 +101,9 @@ const Products = () => {
               to={`/products/${product._id}`}
               className="product-card"
             >
-              {product.images && product.images.length > 0 ? (
+              {product.images && product.images.length > 0 && product.images[0].url ? (
                 <img
-                  src={product.images[0].url}
+                  src={getProductImageUrl(product.images[0])}
                   alt={product.images[0].alt || product.name}
                   className="product-image"
                 />

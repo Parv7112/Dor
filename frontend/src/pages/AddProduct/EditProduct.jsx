@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import apiService from '../../services/api';
+import apiService, { getServerBaseUrl } from '../../services/api';
 import { ROUTES } from '../../constants/routes';
 import './AddProduct.css';
 
@@ -12,9 +12,11 @@ const EditProduct = () => {
     price: '',
     category: '',
     stock: '',
-    images: [{ url: '', alt: '' }],
+    images: [],
     tags: '',
   });
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingProduct, setLoadingProduct] = useState(true);
@@ -30,15 +32,26 @@ const EditProduct = () => {
       const response = await apiService.products.getById(id);
       const product = response.data;
       
+      const existingImages = product.images && product.images.length > 0 
+        ? product.images 
+        : [];
+      
+      // Set previews for existing images - construct full URLs
+      const getImageUrl = (img) => {
+        if (!img || !img.url) return null;
+        if (img.url.startsWith('http')) return img.url;
+        return `${getServerBaseUrl()}${img.url}`;
+      };
+      
+      setImagePreviews(existingImages.map(img => getImageUrl(img)));
+      
       setFormData({
         name: product.name || '',
         description: product.description || '',
         price: product.price || '',
         category: product.category || '',
         stock: product.stock || '',
-        images: product.images && product.images.length > 0 
-          ? product.images 
-          : [{ url: '', alt: '' }],
+        images: existingImages,
         tags: product.tags ? product.tags.join(', ') : '',
       });
     } catch (err) {
@@ -57,22 +70,57 @@ const EditProduct = () => {
     setError('');
   };
 
-  const handleImageChange = (index, field, value) => {
-    const newImages = [...formData.images];
-    newImages[index][field] = value;
-    setFormData({ ...formData, images: newImages });
+  const handleImageSelect = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    setError('');
+    setUploadingImages(true);
+
+    try {
+      // Create previews immediately
+      const previews = files.map((file) => URL.createObjectURL(file));
+      setImagePreviews([...imagePreviews, ...previews]);
+
+      // Upload images (auth required for product uploads)
+      const uploadPromises = files.map((file) => apiService.upload.image(file, true));
+      const uploadResults = await Promise.all(uploadPromises);
+
+      // Get the uploaded URLs (backend returns /api/uploads/filename)
+      const serverBaseUrl = import.meta.env.VITE_API_BASE_URL 
+        ? import.meta.env.VITE_API_BASE_URL.replace('/api', '') || ''
+        : (import.meta.env.PROD ? '' : 'http://localhost:5000');
+      const uploadedImages = uploadResults.map((result, index) => ({
+        url: `${serverBaseUrl}${result.data.url}`,
+        alt: files[index].name.split('.')[0] || `Image ${index + 1}`,
+      }));
+
+      setFormData({
+        ...formData,
+        images: [...formData.images, ...uploadedImages],
+      });
+    } catch (err) {
+      setError(err.message || 'Failed to upload images');
+      // Remove failed previews
+      setImagePreviews(imagePreviews.slice(0, imagePreviews.length));
+    } finally {
+      setUploadingImages(false);
+      // Reset file input
+      e.target.value = '';
+    }
   };
 
-  const addImageField = () => {
-    setFormData({
-      ...formData,
-      images: [...formData.images, { url: '', alt: '' }],
-    });
-  };
+  const removeImage = (index) => {
+    // Revoke object URL if it's a preview (newly uploaded)
+    if (imagePreviews[index] && imagePreviews[index].startsWith('blob:')) {
+      URL.revokeObjectURL(imagePreviews[index]);
+    }
 
-  const removeImageField = (index) => {
     const newImages = formData.images.filter((_, i) => i !== index);
+    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    
     setFormData({ ...formData, images: newImages });
+    setImagePreviews(newPreviews);
   };
 
   const handleSubmit = async (e) => {
@@ -83,13 +131,19 @@ const EditProduct = () => {
       ? formData.tags.split(',').map((tag) => tag.trim()).filter(Boolean)
       : [];
 
-    const validImages = formData.images.filter((img) => img.url.trim() !== '');
+    // Use uploaded images
+    const validImages = formData.images.filter((img) => img.url && img.url.trim() !== '');
+
+    if (validImages.length === 0) {
+      setError('Please upload at least one image');
+      return;
+    }
 
     const productData = {
       ...formData,
       price: parseFloat(formData.price),
       stock: parseInt(formData.stock),
-      images: validImages.length > 0 ? validImages : undefined,
+      images: validImages,
       tags: tagsArray.length > 0 ? tagsArray : undefined,
     };
 
@@ -111,7 +165,7 @@ const EditProduct = () => {
   return (
     <div className="product-form-container">
       <div className="product-form-card">
-        <h1>Edit Product</h1>
+        <h1>Update Product</h1>
 
         {error && <div className="error-message">{error}</div>}
 
@@ -192,39 +246,42 @@ const EditProduct = () => {
           </div>
 
           <div className="form-group">
-            <label>Product Images</label>
-            {formData.images.map((image, index) => (
-              <div key={index} className="image-input-group">
+            <label htmlFor="images">Product Images *</label>
+            <div className="image-upload-section">
+              <div className="file-input-wrapper">
                 <input
-                  type="url"
-                  placeholder="Image URL"
-                  value={image.url}
-                  onChange={(e) => handleImageChange(index, 'url', e.target.value)}
+                  type="file"
+                  id="images"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageSelect}
+                  disabled={uploadingImages}
+                  className="file-input"
                 />
-                <input
-                  type="text"
-                  placeholder="Alt text"
-                  value={image.alt}
-                  onChange={(e) => handleImageChange(index, 'alt', e.target.value)}
-                />
-                {formData.images.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeImageField(index)}
-                    className="remove-button"
-                  >
-                    Remove
-                  </button>
-                )}
+                <label htmlFor="images" className="file-input-label">
+                  {uploadingImages ? 'Uploading...' : '📷 Select Images'}
+                </label>
               </div>
-            ))}
-            <button
-              type="button"
-              onClick={addImageField}
-              className="add-button"
-            >
-              + Add Image
-            </button>
+              <p className="file-input-hint">You can select multiple images (Max 5MB each)</p>
+              
+              {imagePreviews.length > 0 && (
+                <div className="image-previews">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="image-preview-item">
+                      <img src={preview} alt={formData.images[index]?.alt || `Preview ${index + 1}`} className="preview-image" />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="remove-image-button"
+                        title="Remove image"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="form-group">

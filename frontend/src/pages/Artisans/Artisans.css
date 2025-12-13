@@ -40,6 +40,12 @@
   gap: 2rem;
 }
 
+.artisan-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
 .artisan-card {
   background: white;
   border-radius: var(--border-radius-lg);
@@ -49,6 +55,7 @@
   border: 2px solid transparent;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .artisan-card::before {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import apiService from '../../services/api';
 import './Artisans.css';
 
@@ -39,7 +40,12 @@ const Artisans = () => {
       ) : (
         <div className="artisans-grid">
           {artisans.map((artisan) => (
-            <div key={artisan._id} className="artisan-card">
+            <Link
+              key={artisan._id}
+              to={`/artisans/${artisan._id}`}
+              className="artisan-card-link"
+            >
+              <div className="artisan-card">
               <div className="artisan-avatar">
                 {artisan.image ? (
                   <img 
@@ -102,6 +108,7 @@ const Artisans = () => {
                 </div>
               </div>
             </div>
+            </Link>
           ))}
         </div>
       )}
